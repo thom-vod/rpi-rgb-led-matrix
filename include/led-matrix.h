@@ -380,6 +380,14 @@ public:
   virtual void Clear();
   virtual void Fill(uint8_t red, uint8_t green, uint8_t blue);
 
+  virtual uint32_t GetPixel(int x, int y);
+  virtual const uint32_t *GetPixelBuf(size_t *len) {
+	  if (len)
+		  *len = pixelbuflen_;
+	  return pixelbuf_;
+  }
+  virtual void SavePixelBuf(bool spb) { savepixelbuf_ = spb; }
+
 private:
   friend class RGBMatrix;
 
@@ -388,6 +396,10 @@ private:
   internal::Framebuffer *framebuffer() { return frame_; }
 
   internal::Framebuffer *const frame_;
+
+  uint32_t *pixelbuf_;
+  size_t pixelbuflen_;
+  bool savepixelbuf_;
 };
 
 // Runtime options to simplify doing common things for many programs such as

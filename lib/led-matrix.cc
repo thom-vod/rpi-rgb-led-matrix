@@ -737,15 +737,51 @@ void RGBMatrix::Fill(uint8_t red, uint8_t green, uint8_t blue) {
 }
 
 // FrameCanvas implementation of Canvas
+FrameCanvas::FrameCanvas(internal::Framebuffer *frame) : frame_(frame), pixelbuf_(nullptr)
+{
+  pixelbuflen_ = frame_->width() * frame_->height();
+  if (pixelbuflen_) {
+    pixelbuf_ = new uint32_t[pixelbuflen_];
+    if (pixelbuf_ == nullptr) {
+      pixelbuflen_ = 0;
+    }
+  }
+}
 FrameCanvas::~FrameCanvas() { delete frame_; }
 int FrameCanvas::width() const { return frame_->width(); }
 int FrameCanvas::height() const { return frame_->height(); }
 void FrameCanvas::SetPixel(int x, int y,
                          uint8_t red, uint8_t green, uint8_t blue) {
+  if (savepixelbuf_) {
+	int i = y * frame_->width() + x;
+	if (i >= 0 && i < (int)pixelbuflen_) {
+		pixelbuf_[i] = 0xff000000 | red << 16 | green << 8 | blue;
+	}
+  }
   frame_->SetPixel(x, y, red, green, blue);
 }
-void FrameCanvas::Clear() { return frame_->Clear(); }
+uint32_t FrameCanvas::GetPixel(int x, int y) {
+  if (savepixelbuf_) {
+    int i = y * frame_->width() + x;
+    if (i >= 0 && i < (int)pixelbuflen_) {
+      return pixelbuf_[i];
+    }
+  }
+  return 0;
+}
+void FrameCanvas::Clear()
+{
+  if (savepixelbuf_ && pixelbuflen_)
+    memset(pixelbuf_, 0, pixelbuflen_ * sizeof(uint32_t));
+  return frame_->Clear();
+}
 void FrameCanvas::Fill(uint8_t red, uint8_t green, uint8_t blue) {
+  if (savepixelbuf_) {
+    uint32_t c = 0xff000000 | red << 16 | green << 8 | blue;
+    for (int i = 0; i < (int)pixelbuflen_; i++) {
+      pixelbuf_[i] = c;
+    }
+  }
   frame_->Fill(red, green, blue);
 }
 bool FrameCanvas::SetPWMBits(uint8_t value) { return frame_->SetPWMBits(value); }
