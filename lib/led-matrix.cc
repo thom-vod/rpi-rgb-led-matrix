@@ -736,9 +736,13 @@ void RGBMatrix::Fill(uint8_t red, uint8_t green, uint8_t blue) {
   impl_->active_->Fill(red, green, blue);
 }
 
-// FrameCanvas implementation of Canvas
-FrameCanvas::FrameCanvas(internal::Framebuffer *frame) : frame_(frame), pixelbuf_(nullptr)
+void FrameCanvas::SavePixelBuf(bool spb)
 {
+  // Allocate buffer if enabled and it doesn't exist yet
+  savepixelbuf_ = spb;
+  if (!spb || (pixelbuflen_ && pixelbuf_))
+    return;
+
   pixelbuflen_ = frame_->width() * frame_->height();
   if (pixelbuflen_) {
     pixelbuf_ = new uint32_t[pixelbuflen_];
@@ -747,7 +751,14 @@ FrameCanvas::FrameCanvas(internal::Framebuffer *frame) : frame_(frame), pixelbuf
     }
   }
 }
-FrameCanvas::~FrameCanvas() { delete frame_; }
+
+FrameCanvas::~FrameCanvas()
+{
+	if (pixelbuf_)
+		delete pixelbuf_;
+	delete frame_;
+}
+
 int FrameCanvas::width() const { return frame_->width(); }
 int FrameCanvas::height() const { return frame_->height(); }
 void FrameCanvas::SetPixel(int x, int y,

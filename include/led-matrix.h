@@ -386,7 +386,7 @@ public:
 		  *len = pixelbuflen_;
 	  return pixelbuf_;
   }
-  virtual void SavePixelBuf(bool spb) { savepixelbuf_ = spb; }
+  virtual void SavePixelBuf(bool spb);
 
 private:
   friend class RGBMatrix;
@@ -397,9 +397,9 @@ private:
 
   internal::Framebuffer *const frame_;
 
-  uint32_t *pixelbuf_;
-  size_t pixelbuflen_;
-  bool savepixelbuf_;
+  uint32_t *pixelbuf_ = nullptr;
+  size_t pixelbuflen_ = 0;
+  bool savepixelbuf_ = false;
 };
 
 // Runtime options to simplify doing common things for many programs such as
